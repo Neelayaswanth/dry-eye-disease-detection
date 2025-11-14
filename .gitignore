@@ -51,15 +51,15 @@ form_data.db
 file.pickle
 vgg19_blink_model.h5
 
-# Data files (optional - uncomment if you don't want to track data)
-# Dataset/
-# Blink/
-# *.csv
-# *.xlsx
-# *.jpg
-# *.jfif
-# *.png
-# *.JPG
+# Data files (excluded for deployment - too large for GitHub)
+Dataset/
+Blink/
+*.csv
+*.xlsx
+*.jpg
+*.jfif
+*.png
+*.JPG
 
 # OS
 .DS_Store
