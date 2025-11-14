@@ -615,43 +615,42 @@ if selected == 'Eye Disease Prediction':
         
 
         
-        import numpy as np
-        dot1= []
-        labels1 = [] 
-        for img11 in data_aff:
-            # print(img)
-            img_1 = mpimg.imread('Dataset/Affected//' + "/" + img11)
-            img_1 = cv2.resize(img_1,((50, 50)))
-        
-        
-            try:            
-                gray = cv2.cvtColor(img_1, cv2.COLOR_BGR2GRAY)
-                
-            except:
-                gray = img_1
-        
+            import numpy as np
+            dot1= []
+            labels1 = [] 
+            for img11 in data_aff:
+                # print(img)
+                img_1 = mpimg.imread('Dataset/Affected//' + "/" + img11)
+                img_1 = cv2.resize(img_1,((50, 50)))
             
-            dot1.append(np.array(gray))
-            labels1.append(1)
-         
-         
-        for img11 in data_not:
-            # print(img)
-            img_1 = mpimg.imread('Dataset/Not//' + "/" + img11)
-            img_1 = cv2.resize(img_1,((50, 50)))
-        
-        
-            try:            
-                gray = cv2.cvtColor(img_1, cv2.COLOR_BGR2GRAY)
-                
-            except:
-                gray = img_1
-        
             
-            dot1.append(np.array(gray))
-            labels1.append(2)
+                try:            
+                    gray = cv2.cvtColor(img_1, cv2.COLOR_BGR2GRAY)
+                    
+                except:
+                    gray = img_1
+            
+                
+                dot1.append(np.array(gray))
+                labels1.append(1)
+             
+             
+            for img11 in data_not:
+                # print(img)
+                img_1 = mpimg.imread('Dataset/Not//' + "/" + img11)
+                img_1 = cv2.resize(img_1,((50, 50)))
+            
+            
+                try:            
+                    gray = cv2.cvtColor(img_1, cv2.COLOR_BGR2GRAY)
+                    
+                except:
+                    gray = img_1
+            
+                
+                dot1.append(np.array(gray))
+                labels1.append(2)
          
-   
 
             x_train, x_test, y_train, y_test = train_test_split(dot1,labels1,test_size = 0.2, random_state = 101)
             
