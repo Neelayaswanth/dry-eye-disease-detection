@@ -653,234 +653,233 @@ if selected == 'Eye Disease Prediction':
          
    
 
-        x_train, x_test, y_train, y_test = train_test_split(dot1,labels1,test_size = 0.2, random_state = 101)
-        
-        
-        print("------------------------------------------------------------")
-        print(" Image Splitting")
-        print("------------------------------------------------------------")
-        print()
-        
-        st.write("The Total of Images       =",len(dot1))
-        st.write("The Total of Train Images =",len(x_train))
-        st.write("The Total of Test Images  =",len(x_test))
-          
-          
-              
-          
-        #=============================== CLASSIFICATION =================================
-        
-        from keras.utils import to_categorical
-        
-        y_train1=np.array(y_train)
-        y_test1=np.array(y_test)
-        
-        train_Y_one_hot = to_categorical(y_train1)
-        test_Y_one_hot = to_categorical(y_test)
-        
-        
-        
-        
-        # Fix data preparation - convert grayscale to 3-channel
-        x_train2 = np.zeros((len(x_train), 50, 50, 3))
-        for i in range(len(x_train)):
-            img = x_train[i]
-            if len(img.shape) == 2:  # Grayscale
-                x_train2[i] = np.stack([img] * 3, axis=-1)
-            else:
-                x_train2[i] = img
-        
-        x_test2 = np.zeros((len(x_test), 50, 50, 3))
-        for i in range(len(x_test)):
-            img = x_test[i]
-            if len(img.shape) == 2:  # Grayscale
-                x_test2[i] = np.stack([img] * 3, axis=-1)
-            else:
-                x_test2[i] = img
-        
-        # Normalize to [0, 1]
-        x_train2 = x_train2.astype('float32') / 255.0
-        x_test2 = x_test2.astype('float32') / 255.0
-    
-    # ===================================== CLASSIFICATION ==================================
-    
-     # ----------------------- MOBILENET -----------------------
-    
+            x_train, x_test, y_train, y_test = train_test_split(dot1,labels1,test_size = 0.2, random_state = 101)
             
-        st.write("-----------------------------------------------------------")
+            
+            print("------------------------------------------------------------")
+            print(" Image Splitting")
+            print("------------------------------------------------------------")
+            print()
+            
+            st.write("The Total of Images       =",len(dot1))
+            st.write("The Total of Train Images =",len(x_train))
+            st.write("The Total of Test Images  =",len(x_test))
+              
+              
+                  
+              
+            #=============================== CLASSIFICATION =================================
+            
+            from keras.utils import to_categorical
+            
+            y_train1=np.array(y_train)
+            y_test1=np.array(y_test)
+            
+            train_Y_one_hot = to_categorical(y_train1)
+            test_Y_one_hot = to_categorical(y_test)
+            
+            
+            
+            
+            # Fix data preparation - convert grayscale to 3-channel
+            x_train2 = np.zeros((len(x_train), 50, 50, 3))
+            for i in range(len(x_train)):
+                img = x_train[i]
+                if len(img.shape) == 2:  # Grayscale
+                    x_train2[i] = np.stack([img] * 3, axis=-1)
+                else:
+                    x_train2[i] = img
+            
+            x_test2 = np.zeros((len(x_test), 50, 50, 3))
+            for i in range(len(x_test)):
+                img = x_test[i]
+                if len(img.shape) == 2:  # Grayscale
+                    x_test2[i] = np.stack([img] * 3, axis=-1)
+                else:
+                    x_test2[i] = img
+            
+            # Normalize to [0, 1]
+            x_train2 = x_train2.astype('float32') / 255.0
+            x_test2 = x_test2.astype('float32') / 255.0
+        
+        # ===================================== CLASSIFICATION ==================================
+        
+         # ----------------------- MOBILENET -----------------------
+        
+                
+            st.write("-----------------------------------------------------------")
 
-        st.markdown(f'<h1 style="color:#112E9B;text-align: center;font-size:26px;">{"Classification - MobileNet"}</h1>', unsafe_allow_html=True)
+            st.markdown(f'<h1 style="color:#112E9B;text-align: center;font-size:26px;">{"Classification - MobileNet"}</h1>', unsafe_allow_html=True)
+            
         
-    
-        import time
-        import numpy as np
-        import tensorflow as tf
-        from tensorflow.keras.models import Model
-        from tensorflow.keras.layers import Input, TimeDistributed, Conv2D, MaxPooling2D, Flatten, LSTM, Dense, Dropout
-        from tensorflow.keras.optimizers import Adam
-        from keras.utils import to_categorical
-        from tensorflow.keras import layers, models
-        
-        
-        print()
-        print("----------------------------------------------")
-        print(" Classification - Mobilnet")
-        print("----------------------------------------------")
-        print()
-        from tensorflow.keras.applications import MobileNet
-        
-        start_mob = time.time()
-        
-        base_model = MobileNet(weights=None, input_shape=(50, 50, 3), classes=3)
-        
-        model = models.Model(inputs=base_model.input, outputs=base_model.output)
-        
-        model.compile(optimizer='adam', loss='categorical_crossentropy')
-        
-        model.summary()
-        
-        history = model.fit(x_train2,train_Y_one_hot, epochs=3, batch_size=64)
-        
-        loss_val = history.history['loss']
-        
-        loss_val = min(loss_val)
-        
-        acc_mob = 100 - loss_val
-        
-        
-        print("-------------------------------------")
-        print("Mobilenet - Perfromance Analysis")
-        print("-------------------------------------")
-        print()
-        print("1. Accuracy   =", acc_mob,'%')
-        print()
-        print("2. Error Rate =",loss_val)
-        print()
-        
-        
-        predictions = model.predict(x_test2)
-        
-        end_mob = time.time()
-        
-        time_mob = (end_mob-start_mob) * 10**3
-        
-        time_mob = time_mob / 1000
-        
-        print("3. Execution Time  = ",time_mob, "s")
-        
-        
-        st.write("-------------------------------------")
-        st.write("Mobilenet - Perfromance Analysis")
-        st.write("-------------------------------------")
-        print()
-        st.write("1. Accuracy   =", acc_mob,'%')
-        print()
-        st.write("2. Error Rate =",loss_val)
-        print()
-        
-        
-        predictions = model.predict(x_test2)
-        
-        end_mob = time.time()
-        
-        time_mob = (end_mob-start_mob) * 10**3
-        
-        time_mob = time_mob / 1000
-        
-        st.write("3. Execution Time  = ",time_mob, "s")
-                
-        
-        # --- prediction
-        
-        st.write("-----------------------------------------------------------")
-    
-        st.markdown(f'<h1 style="color:#112E9B;text-align: center;font-size:26px;">{"Prediction -Eye Disease"}</h1>', unsafe_allow_html=True)
-         
-        # Check if model was trained
-        if not training_available or 'model' not in locals():
-            st.warning("⚠️ Model training is required for prediction. Please ensure training datasets are available.")
-            st.info("💡 **Alternative:** You can use the 'Dry Eye Prediction' feature which works with uploaded CSV/Excel files.")
-        else:
-            # Prepare the uploaded image for prediction
-            try:
-                # Resize and preprocess the uploaded image
-                test_img_resized = cv2.resize(img_resize_orig, (50, 50))
-                
-                # Convert to grayscale if needed
-                try:
-                    test_img_gray = cv2.cvtColor(test_img_resized, cv2.COLOR_BGR2GRAY)
-                except:
-                    test_img_gray = test_img_resized
-                
-                # Convert to 3-channel if needed
-                if len(test_img_gray.shape) == 2:
-                    test_img_3channel = np.stack([test_img_gray] * 3, axis=-1)
-                else:
-                    test_img_3channel = test_img_gray
-                
-                # Ensure it's the right shape
-                if test_img_3channel.shape != (50, 50, 3):
-                    test_img_3channel = cv2.resize(test_img_3channel, (50, 50))
-                    if len(test_img_3channel.shape) == 2:
-                        test_img_3channel = np.stack([test_img_3channel] * 3, axis=-1)
-                
-                # Normalize and reshape for prediction
-                test_img_array = np.expand_dims(test_img_3channel, axis=0)
-                
-                # Use the trained model to make prediction
-                prediction = model.predict(test_img_array, verbose=0)
-                predicted_class = np.argmax(prediction[0])
-                
-                # Map prediction to label
-                # The model outputs probabilities for 3 classes, but labels 1 and 2 are used
-                # Class 0: unused, Class 1: Affected (label 1), Class 2: Not Affected (label 2)
-                confidence = prediction[0][predicted_class] * 100
-                
-                st.write('-----------------------------------------')
-                print()
-                # Since to_categorical converts labels 1,2 to [0,1,0] and [0,0,1]
-                # predicted_class 1 means Affected, predicted_class 2 means Not
-                if predicted_class == 1:
-                    st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Affected"}</h1>', unsafe_allow_html=True)
-                elif predicted_class == 2:
-                    st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Not Affected"}</h1>', unsafe_allow_html=True)
-                else:
-                    # If class 0 is predicted (shouldn't happen), use the highest non-zero class
-                    probs = prediction[0]
-                    if probs[1] > probs[2]:
-                        st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Affected"}</h1>', unsafe_allow_html=True)
-                        confidence = probs[1] * 100
-                    else:
-                        st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Not Affected"}</h1>', unsafe_allow_html=True)
-                        confidence = probs[2] * 100
-                st.write(f'Confidence: {confidence:.2f}%')
-                print()
-                st.write('---------------------------------')
-                
-            except Exception as e:
-                # Fallback to distance-based matching if model prediction fails
-                st.write("Using fallback prediction method...")
-                try:
-                    Total_length = len(dot1)
+            import time
+            import numpy as np
+            import tensorflow as tf
+            from tensorflow.keras.models import Model
+            from tensorflow.keras.layers import Input, TimeDistributed, Conv2D, MaxPooling2D, Flatten, LSTM, Dense, Dropout
+            from tensorflow.keras.optimizers import Adam
+            from keras.utils import to_categorical
+            from tensorflow.keras import layers, models
+            
+            
+            print()
+            print("----------------------------------------------")
+            print(" Classification - Mobilnet")
+            print("----------------------------------------------")
+            print()
+            from tensorflow.keras.applications import MobileNet
+            
+            start_mob = time.time()
+            
+            base_model = MobileNet(weights=None, input_shape=(50, 50, 3), classes=3)
+            
+            model = models.Model(inputs=base_model.input, outputs=base_model.output)
+            
+            model.compile(optimizer='adam', loss='categorical_crossentropy')
+            
+            model.summary()
+            
+            history = model.fit(x_train2,train_Y_one_hot, epochs=3, batch_size=64)
+            
+            loss_val = history.history['loss']
+            
+            loss_val = min(loss_val)
+            
+            acc_mob = 100 - loss_val
+            
+            
+            print("-------------------------------------")
+            print("Mobilenet - Perfromance Analysis")
+            print("-------------------------------------")
+            print()
+            print("1. Accuracy   =", acc_mob,'%')
+            print()
+            print("2. Error Rate =",loss_val)
+            print()
+            
+            
+            predictions = model.predict(x_test2)
+            
+            end_mob = time.time()
+            
+            time_mob = (end_mob-start_mob) * 10**3
+            
+            time_mob = time_mob / 1000
+            
+            print("3. Execution Time  = ",time_mob, "s")
+            
+            
+            st.write("-------------------------------------")
+            st.write("Mobilenet - Perfromance Analysis")
+            st.write("-------------------------------------")
+            print()
+            st.write("1. Accuracy   =", acc_mob,'%')
+            print()
+            st.write("2. Error Rate =",loss_val)
+            print()
+            
+            
+            predictions = model.predict(x_test2)
+            
+            end_mob = time.time()
+            
+            time_mob = (end_mob-start_mob) * 10**3
+            
+            time_mob = time_mob / 1000
+            
+            st.write("3. Execution Time  = ",time_mob, "s")
                     
-                    # Find the closest match by comparing mean values with tolerance
-                    test_mean = np.mean(gray1)
-                    distances = [abs(np.mean(dot1[ijk]) - test_mean) for ijk in range(Total_length)]
-                    closest_idx = np.argmin(distances)
+            
+            # --- prediction
+            
+            st.write("-----------------------------------------------------------")
+        
+            st.markdown(f'<h1 style="color:#112E9B;text-align: center;font-size:26px;">{"Prediction -Eye Disease"}</h1>', unsafe_allow_html=True)
+             
+            # Check if model was trained (should be available since we're in the else block)
+            if 'model' not in locals():
+                st.warning("⚠️ Model training failed. Please check the training process.")
+            else:
+                # Prepare the uploaded image for prediction
+                try:
+                    # Resize and preprocess the uploaded image
+                    test_img_resized = cv2.resize(img_resize_orig, (50, 50))
                     
-                    if labels1[closest_idx] == 1:
-                        st.write('-----------------------------------------')
-                        print()
-                        st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Affected"}</h1>', unsafe_allow_html=True)
+                    # Convert to grayscale if needed
+                    try:
+                        test_img_gray = cv2.cvtColor(test_img_resized, cv2.COLOR_BGR2GRAY)
+                    except:
+                        test_img_gray = test_img_resized
+                    
+                    # Convert to 3-channel if needed
+                    if len(test_img_gray.shape) == 2:
+                        test_img_3channel = np.stack([test_img_gray] * 3, axis=-1)
                     else:
-                        st.write('---------------------------------')
-                        print()
+                        test_img_3channel = test_img_gray
+                    
+                    # Ensure it's the right shape
+                    if test_img_3channel.shape != (50, 50, 3):
+                        test_img_3channel = cv2.resize(test_img_3channel, (50, 50))
+                        if len(test_img_3channel.shape) == 2:
+                            test_img_3channel = np.stack([test_img_3channel] * 3, axis=-1)
+                    
+                    # Normalize and reshape for prediction
+                    test_img_array = np.expand_dims(test_img_3channel, axis=0)
+                    
+                    # Use the trained model to make prediction
+                    prediction = model.predict(test_img_array, verbose=0)
+                    predicted_class = np.argmax(prediction[0])
+                    
+                    # Map prediction to label
+                    # The model outputs probabilities for 3 classes, but labels 1 and 2 are used
+                    # Class 0: unused, Class 1: Affected (label 1), Class 2: Not Affected (label 2)
+                    confidence = prediction[0][predicted_class] * 100
+                    
+                    st.write('-----------------------------------------')
+                    print()
+                    # Since to_categorical converts labels 1,2 to [0,1,0] and [0,0,1]
+                    # predicted_class 1 means Affected, predicted_class 2 means Not
+                    if predicted_class == 1:
+                        st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Affected"}</h1>', unsafe_allow_html=True)
+                    elif predicted_class == 2:
                         st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Not Affected"}</h1>', unsafe_allow_html=True)
-                        print()
-                        st.write('---------------------------------')
-                except Exception as e2:
-                    st.error(f"Prediction failed: {str(e2)}")
-                    st.write("Please try uploading a different image.")   
+                    else:
+                        # If class 0 is predicted (shouldn't happen), use the highest non-zero class
+                        probs = prediction[0]
+                        if probs[1] > probs[2]:
+                            st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Affected"}</h1>', unsafe_allow_html=True)
+                            confidence = probs[1] * 100
+                        else:
+                            st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Not Affected"}</h1>', unsafe_allow_html=True)
+                            confidence = probs[2] * 100
+                    st.write(f'Confidence: {confidence:.2f}%')
+                    print()
+                    st.write('---------------------------------')
+                    
+                except Exception as e:
+                    # Fallback to distance-based matching if model prediction fails
+                    st.write("Using fallback prediction method...")
+                    try:
+                        Total_length = len(dot1)
+                        
+                        # Find the closest match by comparing mean values with tolerance
+                        test_mean = np.mean(gray1)
+                        distances = [abs(np.mean(dot1[ijk]) - test_mean) for ijk in range(Total_length)]
+                        closest_idx = np.argmin(distances)
+                        
+                        if labels1[closest_idx] == 1:
+                            st.write('-----------------------------------------')
+                            print()
+                            st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Affected"}</h1>', unsafe_allow_html=True)
+                        else:
+                            st.write('---------------------------------')
+                            print()
+                            st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Not Affected"}</h1>', unsafe_allow_html=True)
+                            print()
+                            st.write('---------------------------------')
+                    except Exception as e2:
+                        st.error(f"Prediction failed: {str(e2)}")
+                        st.write("Please try uploading a different image.")   
     
 
 
@@ -1482,13 +1481,10 @@ if selected == 'Eye Blink Detection':
             st.markdown("---")
             # Skip training but allow other features
             pass
-        else:    
-
-
-        
-        import numpy as np
-        dot1= []
-        labels1 = [] 
+        else:
+            import numpy as np
+            dot1= []
+            labels1 = []
         for img11 in data_clos:
             # print(img)
             img_1 = mpimg.imread('Blink/Closed//' + "/" + img11)
