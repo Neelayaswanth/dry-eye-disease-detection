@@ -55,7 +55,8 @@ vgg19_blink_model.h5
 Dataset/
 Blink/
 *.csv
-*.xlsx
+# Allow Dataset.xlsx as it's required for the application
+!Dataset.xlsx
 *.jpg
 *.jfif
 *.png
@@ -66,8 +67,9 @@ Blink/
 Thumbs.db
 _avast_/
 
-# Streamlit
-.streamlit/
+# Streamlit (allow config.toml for deployment)
+.streamlit/*
+!.streamlit/config.toml
 
 # Logs
 *.log
