@@ -581,9 +581,19 @@ if selected == 'Eye Disease Prediction':
             image_extensions = ('.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG', '.jfif', '.JFIF')
             return filename.lower().endswith(image_extensions)
          
-        data_aff = [f for f in os.listdir('Dataset/Affected/') if is_image_file(f)]
-         
-        data_not = [f for f in os.listdir('Dataset/Not/') if is_image_file(f)]
+        # Check if dataset directories exist
+        if not os.path.exists('Dataset/Affected/') or not os.path.exists('Dataset/Not/'):
+            st.error("⚠️ Training dataset not available. Dataset directories are required for model training.")
+            st.info("Please ensure the Dataset/Affected/ and Dataset/Not/ directories exist with training images.")
+            st.stop()
+        
+        try:
+            data_aff = [f for f in os.listdir('Dataset/Affected/') if is_image_file(f)]
+            data_not = [f for f in os.listdir('Dataset/Not/') if is_image_file(f)]
+        except FileNotFoundError as e:
+            st.error(f"⚠️ Error accessing dataset directories: {e}")
+            st.info("Please ensure the Dataset/Affected/ and Dataset/Not/ directories exist with training images.")
+            st.stop()
          
         
 
@@ -1416,17 +1426,28 @@ if selected == 'Eye Blink Detection':
             image_extensions = ('.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG', '.jfif', '.JFIF')
             return filename.lower().endswith(image_extensions)
          
-        data_clos = [f for f in os.listdir('Blink/Closed/') if is_image_file(f)]
-         
-        data_forward = [f for f in os.listdir('Blink/forward_look/') if is_image_file(f)]
-         
-        data_left = [f for f in os.listdir('Blink/left_look/') if is_image_file(f)]
-         
-        data_open = [f for f in os.listdir('Blink/Open/') if is_image_file(f)]
-         
-        data_partial = [f for f in os.listdir('Blink/Partial/') if is_image_file(f)]
-         
-        data_right = [f for f in os.listdir('Blink/right_look/') if is_image_file(f)]    
+        # Check if Blink dataset directories exist
+        required_dirs = ['Blink/Closed/', 'Blink/forward_look/', 'Blink/left_look/', 
+                        'Blink/Open/', 'Blink/Partial/', 'Blink/right_look/']
+        missing_dirs = [d for d in required_dirs if not os.path.exists(d)]
+        
+        if missing_dirs:
+            st.error("⚠️ Training dataset not available. Blink dataset directories are required for model training.")
+            st.info(f"Missing directories: {', '.join(missing_dirs)}")
+            st.info("Please ensure all Blink dataset directories exist with training images.")
+            st.stop()
+        
+        try:
+            data_clos = [f for f in os.listdir('Blink/Closed/') if is_image_file(f)]
+            data_forward = [f for f in os.listdir('Blink/forward_look/') if is_image_file(f)]
+            data_left = [f for f in os.listdir('Blink/left_look/') if is_image_file(f)]
+            data_open = [f for f in os.listdir('Blink/Open/') if is_image_file(f)]
+            data_partial = [f for f in os.listdir('Blink/Partial/') if is_image_file(f)]
+            data_right = [f for f in os.listdir('Blink/right_look/') if is_image_file(f)]
+        except FileNotFoundError as e:
+            st.error(f"⚠️ Error accessing Blink dataset directories: {e}")
+            st.info("Please ensure all Blink dataset directories exist with training images.")
+            st.stop()    
 
 
         
