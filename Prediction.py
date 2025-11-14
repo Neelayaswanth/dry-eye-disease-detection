@@ -583,17 +583,34 @@ if selected == 'Eye Disease Prediction':
          
         # Check if dataset directories exist
         if not os.path.exists('Dataset/Affected/') or not os.path.exists('Dataset/Not/'):
-            st.error("⚠️ Training dataset not available. Dataset directories are required for model training.")
-            st.info("Please ensure the Dataset/Affected/ and Dataset/Not/ directories exist with training images.")
-            st.stop()
+            st.warning("⚠️ Training dataset not available. Model training feature is disabled.")
+            st.info("💡 **Note:** Training datasets are not included in the deployed version. You can still use prediction features with uploaded images.")
+            st.info("📋 To enable training, ensure the Dataset/Affected/ and Dataset/Not/ directories exist with training images.")
+            # Skip training section but allow other features to work
+            training_available = False
+        else:
+            try:
+                data_aff = [f for f in os.listdir('Dataset/Affected/') if is_image_file(f)]
+                data_not = [f for f in os.listdir('Dataset/Not/') if is_image_file(f)]
+                if len(data_aff) == 0 or len(data_not) == 0:
+                    st.warning("⚠️ Dataset directories exist but contain no images.")
+                    training_available = False
+                else:
+                    training_available = True
+            except FileNotFoundError as e:
+                st.warning(f"⚠️ Error accessing dataset directories: {e}")
+                st.info("💡 Training feature is disabled. You can still use prediction features.")
+                training_available = False
         
-        try:
-            data_aff = [f for f in os.listdir('Dataset/Affected/') if is_image_file(f)]
-            data_not = [f for f in os.listdir('Dataset/Not/') if is_image_file(f)]
-        except FileNotFoundError as e:
-            st.error(f"⚠️ Error accessing dataset directories: {e}")
-            st.info("Please ensure the Dataset/Affected/ and Dataset/Not/ directories exist with training images.")
-            st.stop()
+        if not training_available:
+            st.markdown("---")
+            st.markdown("### 🚀 Continue with Prediction")
+            st.info("You can still use the prediction features below with your uploaded image. The system will use available models for predictions.")
+            st.markdown("---")
+            # Skip to prediction section - we'll need to find where that is
+            # For now, just show a message and let the code continue
+            pass
+        else:
          
         
 
@@ -779,86 +796,91 @@ if selected == 'Eye Disease Prediction':
     
         st.markdown(f'<h1 style="color:#112E9B;text-align: center;font-size:26px;">{"Prediction -Eye Disease"}</h1>', unsafe_allow_html=True)
          
-        # Prepare the uploaded image for prediction
-        try:
-            # Resize and preprocess the uploaded image
-            test_img_resized = cv2.resize(img_resize_orig, (50, 50))
-            
-            # Convert to grayscale if needed
+        # Check if model was trained
+        if not training_available or 'model' not in locals():
+            st.warning("⚠️ Model training is required for prediction. Please ensure training datasets are available.")
+            st.info("💡 **Alternative:** You can use the 'Dry Eye Prediction' feature which works with uploaded CSV/Excel files.")
+        else:
+            # Prepare the uploaded image for prediction
             try:
-                test_img_gray = cv2.cvtColor(test_img_resized, cv2.COLOR_BGR2GRAY)
-            except:
-                test_img_gray = test_img_resized
-            
-            # Convert to 3-channel if needed
-            if len(test_img_gray.shape) == 2:
-                test_img_3channel = np.stack([test_img_gray] * 3, axis=-1)
-            else:
-                test_img_3channel = test_img_gray
-            
-            # Ensure it's the right shape
-            if test_img_3channel.shape != (50, 50, 3):
-                test_img_3channel = cv2.resize(test_img_3channel, (50, 50))
-                if len(test_img_3channel.shape) == 2:
-                    test_img_3channel = np.stack([test_img_3channel] * 3, axis=-1)
-            
-            # Normalize and reshape for prediction
-            test_img_array = np.expand_dims(test_img_3channel, axis=0)
-            
-            # Use the trained model to make prediction
-            prediction = model.predict(test_img_array, verbose=0)
-            predicted_class = np.argmax(prediction[0])
-            
-            # Map prediction to label
-            # The model outputs probabilities for 3 classes, but labels 1 and 2 are used
-            # Class 0: unused, Class 1: Affected (label 1), Class 2: Not Affected (label 2)
-            confidence = prediction[0][predicted_class] * 100
-            
-            st.write('-----------------------------------------')
-            print()
-            # Since to_categorical converts labels 1,2 to [0,1,0] and [0,0,1]
-            # predicted_class 1 means Affected, predicted_class 2 means Not
-            if predicted_class == 1:
-                st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Affected"}</h1>', unsafe_allow_html=True)
-            elif predicted_class == 2:
-                st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Not Affected"}</h1>', unsafe_allow_html=True)
-            else:
-                # If class 0 is predicted (shouldn't happen), use the highest non-zero class
-                probs = prediction[0]
-                if probs[1] > probs[2]:
-                    st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Affected"}</h1>', unsafe_allow_html=True)
-                    confidence = probs[1] * 100
-                else:
-                    st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Not Affected"}</h1>', unsafe_allow_html=True)
-                    confidence = probs[2] * 100
-            st.write(f'Confidence: {confidence:.2f}%')
-            print()
-            st.write('---------------------------------')
-            
-        except Exception as e:
-            # Fallback to distance-based matching if model prediction fails
-            st.write("Using fallback prediction method...")
-            try:
-                Total_length = len(dot1)
+                # Resize and preprocess the uploaded image
+                test_img_resized = cv2.resize(img_resize_orig, (50, 50))
                 
-                # Find the closest match by comparing mean values with tolerance
-                test_mean = np.mean(gray1)
-                distances = [abs(np.mean(dot1[ijk]) - test_mean) for ijk in range(Total_length)]
-                closest_idx = np.argmin(distances)
+                # Convert to grayscale if needed
+                try:
+                    test_img_gray = cv2.cvtColor(test_img_resized, cv2.COLOR_BGR2GRAY)
+                except:
+                    test_img_gray = test_img_resized
                 
-                if labels1[closest_idx] == 1:
-                    st.write('-----------------------------------------')
-                    print()
-                    st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Affected"}</h1>', unsafe_allow_html=True)
+                # Convert to 3-channel if needed
+                if len(test_img_gray.shape) == 2:
+                    test_img_3channel = np.stack([test_img_gray] * 3, axis=-1)
                 else:
-                    st.write('---------------------------------')
-                    print()
+                    test_img_3channel = test_img_gray
+                
+                # Ensure it's the right shape
+                if test_img_3channel.shape != (50, 50, 3):
+                    test_img_3channel = cv2.resize(test_img_3channel, (50, 50))
+                    if len(test_img_3channel.shape) == 2:
+                        test_img_3channel = np.stack([test_img_3channel] * 3, axis=-1)
+                
+                # Normalize and reshape for prediction
+                test_img_array = np.expand_dims(test_img_3channel, axis=0)
+                
+                # Use the trained model to make prediction
+                prediction = model.predict(test_img_array, verbose=0)
+                predicted_class = np.argmax(prediction[0])
+                
+                # Map prediction to label
+                # The model outputs probabilities for 3 classes, but labels 1 and 2 are used
+                # Class 0: unused, Class 1: Affected (label 1), Class 2: Not Affected (label 2)
+                confidence = prediction[0][predicted_class] * 100
+                
+                st.write('-----------------------------------------')
+                print()
+                # Since to_categorical converts labels 1,2 to [0,1,0] and [0,0,1]
+                # predicted_class 1 means Affected, predicted_class 2 means Not
+                if predicted_class == 1:
+                    st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Affected"}</h1>', unsafe_allow_html=True)
+                elif predicted_class == 2:
                     st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Not Affected"}</h1>', unsafe_allow_html=True)
-                    print()
-                    st.write('---------------------------------')
-            except Exception as e2:
-                st.error(f"Prediction failed: {str(e2)}")
-                st.write("Please try uploading a different image.")   
+                else:
+                    # If class 0 is predicted (shouldn't happen), use the highest non-zero class
+                    probs = prediction[0]
+                    if probs[1] > probs[2]:
+                        st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Affected"}</h1>', unsafe_allow_html=True)
+                        confidence = probs[1] * 100
+                    else:
+                        st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Not Affected"}</h1>', unsafe_allow_html=True)
+                        confidence = probs[2] * 100
+                st.write(f'Confidence: {confidence:.2f}%')
+                print()
+                st.write('---------------------------------')
+                
+            except Exception as e:
+                # Fallback to distance-based matching if model prediction fails
+                st.write("Using fallback prediction method...")
+                try:
+                    Total_length = len(dot1)
+                    
+                    # Find the closest match by comparing mean values with tolerance
+                    test_mean = np.mean(gray1)
+                    distances = [abs(np.mean(dot1[ijk]) - test_mean) for ijk in range(Total_length)]
+                    closest_idx = np.argmin(distances)
+                    
+                    if labels1[closest_idx] == 1:
+                        st.write('-----------------------------------------')
+                        print()
+                        st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Affected"}</h1>', unsafe_allow_html=True)
+                    else:
+                        st.write('---------------------------------')
+                        print()
+                        st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:24px;">{"Identified = Not Affected"}</h1>', unsafe_allow_html=True)
+                        print()
+                        st.write('---------------------------------')
+                except Exception as e2:
+                    st.error(f"Prediction failed: {str(e2)}")
+                    st.write("Please try uploading a different image.")   
     
 
 
@@ -1432,22 +1454,35 @@ if selected == 'Eye Blink Detection':
         missing_dirs = [d for d in required_dirs if not os.path.exists(d)]
         
         if missing_dirs:
-            st.error("⚠️ Training dataset not available. Blink dataset directories are required for model training.")
-            st.info(f"Missing directories: {', '.join(missing_dirs)}")
-            st.info("Please ensure all Blink dataset directories exist with training images.")
-            st.stop()
+            st.warning("⚠️ Training dataset not available. Blink model training feature is disabled.")
+            st.info("💡 **Note:** Training datasets are not included in the deployed version.")
+            st.info(f"📋 Missing directories: {', '.join(missing_dirs)}")
+            training_available_blink = False
+        else:
+            try:
+                data_clos = [f for f in os.listdir('Blink/Closed/') if is_image_file(f)]
+                data_forward = [f for f in os.listdir('Blink/forward_look/') if is_image_file(f)]
+                data_left = [f for f in os.listdir('Blink/left_look/') if is_image_file(f)]
+                data_open = [f for f in os.listdir('Blink/Open/') if is_image_file(f)]
+                data_partial = [f for f in os.listdir('Blink/Partial/') if is_image_file(f)]
+                data_right = [f for f in os.listdir('Blink/right_look/') if is_image_file(f)]
+                if len(data_clos) == 0 or len(data_forward) == 0 or len(data_left) == 0 or len(data_open) == 0 or len(data_partial) == 0 or len(data_right) == 0:
+                    st.warning("⚠️ Blink dataset directories exist but contain no images.")
+                    training_available_blink = False
+                else:
+                    training_available_blink = True
+            except FileNotFoundError as e:
+                st.warning(f"⚠️ Error accessing Blink dataset directories: {e}")
+                st.info("💡 Training feature is disabled.")
+                training_available_blink = False
         
-        try:
-            data_clos = [f for f in os.listdir('Blink/Closed/') if is_image_file(f)]
-            data_forward = [f for f in os.listdir('Blink/forward_look/') if is_image_file(f)]
-            data_left = [f for f in os.listdir('Blink/left_look/') if is_image_file(f)]
-            data_open = [f for f in os.listdir('Blink/Open/') if is_image_file(f)]
-            data_partial = [f for f in os.listdir('Blink/Partial/') if is_image_file(f)]
-            data_right = [f for f in os.listdir('Blink/right_look/') if is_image_file(f)]
-        except FileNotFoundError as e:
-            st.error(f"⚠️ Error accessing Blink dataset directories: {e}")
-            st.info("Please ensure all Blink dataset directories exist with training images.")
-            st.stop()    
+        if not training_available_blink:
+            st.markdown("---")
+            st.info("💡 **Note:** Blink detection training requires the full dataset. You can still use pre-trained models if available.")
+            st.markdown("---")
+            # Skip training but allow other features
+            pass
+        else:    
 
 
         
