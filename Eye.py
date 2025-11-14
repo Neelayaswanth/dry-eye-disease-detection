@@ -8,8 +8,19 @@ st.markdown(f'<h1 style="color:#000000;text-align: center;font-size:32px;">{"AI-
 
 
 def add_bg_from_local(image_file):
-    with open(image_file, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read())
+    try:
+        with open(image_file, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read())
+    except FileNotFoundError:
+        # If background image is not found, use a default gradient background
+        st.markdown("""
+        <style>
+        .stApp {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        return
     st.markdown(
     f"""
     <style>

@@ -58,6 +58,9 @@ Blink/
 # Allow Dataset.xlsx as it's required for the application
 !Dataset.xlsx
 *.jpg
+# Allow background images for UI
+!2.jpg
+!3.jpg
 *.jfif
 *.png
 *.JPG
